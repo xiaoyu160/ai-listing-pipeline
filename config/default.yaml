@@ -1,0 +1,48 @@
+provider:
+  # openai_compat: 任何兼容 OpenAI Chat Completions 协议的服务（DeepSeek / 通义 / Kimi / OpenAI）
+  # mock: 不联网的本地模拟，用于跑通链路和演示
+  type: openai_compat
+  base_url: https://api.deepseek.com/v1
+  model: deepseek-chat
+  api_key_env: DEEPSEEK_API_KEY
+  temperature: 0.7
+  max_tokens: 800
+  timeout: 60
+  # 成本估算（元 / 1K tokens），按实际使用方单价改
+  price_per_1k_input: 0.001
+  price_per_1k_output: 0.002
+
+batch:
+  workers: 4          # 并发数，注意按服务商 QPS 调整
+  retries: 3
+  backoff_base: 1.6   # 指数退避：base ** attempt 秒
+  checkpoint: out/checkpoint.jsonl
+
+prompt:
+  template: config/prompts/listing.yaml
+
+rules:
+  language: zh
+  title_min_chars: 12
+  title_max_chars: 60
+  selling_points_min: 3
+  selling_points_max: 5
+  selling_point_max_chars: 40
+  keywords_min: 3
+  keywords_max: 8
+  forbid_emoji: true
+  max_repeat_ratio: 0.65   # 与原标题的字符重合率上限，防止“原文照抄”
+  must_include: []         # 全局必含词；每行数据里的 keywords 会自动并入
+  banned_words_file: data/banned_words.txt
+
+columns:
+  id: 商品ID
+  name: 商品名称
+  category: 类目
+  attributes: 属性
+  keywords: 关键词
+  style: 风格
+
+export:
+  platform_name: 通用电商上架表
+  filename: out/listing_export.csv
